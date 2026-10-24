@@ -17,7 +17,7 @@ def _secret(name: str) -> str:
 class Settings:
     verification_api_key: str
     detection_api_key: str
-    # Coeficientes de la transformación distancia -> similitud: (tanh((a - d) * b) + 1) / 2. Dependen del modelo.
+    # Coeficientes de la transformación distancia -> similitud: (tanh((a - d) * b) + 1) / 2. Son los de CompreFace para FaceNet 20180402-114759.
     similarity_a: float
     similarity_b: float
     max_image_bytes: int
@@ -31,7 +31,7 @@ def load_settings() -> Settings:
     return Settings(
         verification_api_key=verification_key,
         detection_api_key=detection_key,
-        similarity_a=float(os.environ.get("SIMILARITY_A", "1.1")),
-        similarity_b=float(os.environ.get("SIMILARITY_B", "3.0")),
+        similarity_a=float(os.environ.get("SIMILARITY_A", "1.1817961")),
+        similarity_b=float(os.environ.get("SIMILARITY_B", "5.291995557")),
         max_image_bytes=int(os.environ.get("MAX_IMAGE_BYTES", str(5 * 1024 * 1024))),
     )
