@@ -45,6 +45,31 @@ Los `.onnx` no van en el repositorio ni en la imagen: se generan una vez a parti
 - `tools/smoke_real.py`: misma persona 0,970-0,996; personas distintas <= 0,215; edad 25-32 en las tres personas de ejemplo
   (30, 25 y 30 años reales).
 
+## Comparación con CompreFace 1.2.0 (oct 2026)
+
+`tools/compare/`: las mismas llamadas de Vero contra el CompreFace real y contra este servicio, con fotos de LFW y con fotos de
+prueba de PRO (solo se miraron números). Enviando los mismos píxeles (PNG, fotos de 250 a 1280 px):
+
+| | Resultado |
+|---|---|
+| Similitud (verificar) | misma persona: diferencia máx. 0,002; 0 decisiones distintas con 0,85 / 0,6 / 0,5 (de 199 a 220 comparaciones) |
+| Fotos de PRO (133 parejas) | diferencia 0,0000; caras y error iguales en 29/29; edad igual 17/17 |
+| Caras y errores | mismo número de caras 120-138/138; mismos códigos (28 sin cara, 31 varias caras) |
+| Giro de la cabeza | diferencia media 0,00-0,01 grados, máx. 0,07 |
+| Edad | mismo tramo 116/116 con fotos de 1280 px; 0 diferencias en el filtro de menores |
+| Memoria | ~0,4-0,6 GB frente a ~2,1 GB (core + api + admin) |
+
+Lo que explicó las diferencias que aparecieron al principio, y está corregido o documentado:
+
+- **Recorte a 160x160** (`app/resize.py`): scikit-image 0.17.2 (el de CompreFace) cuantiza el suavizado a enteros de 8 bits antes
+  de interpolar; las versiones nuevas no. Error medio frente a CompreFace: 3e-3 con el resize actual, 1e-6 con la réplica. Afectaba
+  a cualquier recorte reducido (fotos de móvil).
+- **Decodificador JPEG**: CompreFace usa Pillow 8.3.2 / libjpeg 9; aquí libjpeg-turbo. Con JPEG los píxeles difieren ~0,3/255 de
+  media y, sobre eso, el modelo de edad cambia de tramo en ~6 % de las caras y la similitud se mueve (en fotos de PRO enviadas
+  como JPEG: 2 de 120 parejas cruzan 0,85). Es ruido propio del modelo con cualquier decodificador; no se replica libjpeg 9.
+- Imagen ilegible: se responde 28, como CompreFace. Sin rotar por EXIF, como `imageio`.
+- El modelo de edad convertido a ONNX coincide con el original: 445 caras, mismo tramo en todas (`tools/diag_ref.py`, `tools/diag_lite.py`).
+
 ## Pruebas
 
     pip install -r requirements-dev.txt

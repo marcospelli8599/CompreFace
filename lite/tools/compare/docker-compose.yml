@@ -1,0 +1,68 @@
+﻿# Banco de pruebas local: CompreFace 1.2.0 (misma configuracion que produccion, infra/docker-stack.yml) y compreface-lite.
+name: cfcmp
+services:
+  compreface-postgres-db:
+    image: exadel/compreface-postgres-db:1.2.0
+    environment:
+      POSTGRES_USER: compreface
+      POSTGRES_DB: frs
+      POSTGRES_PASSWORD: cmp-local-test
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  compreface-core:
+    image: exadel/compreface-core:1.2.0
+    environment:
+      ML_PORT: "3000"
+      IMG_LENGTH_LIMIT: "640"
+      UWSGI_PROCESSES: "1"
+      UWSGI_THREADS: "1"
+
+  compreface-api:
+    image: exadel/compreface-api:1.2.0
+    depends_on: [compreface-postgres-db, compreface-core]
+    environment:
+      POSTGRES_USER: compreface
+      POSTGRES_PASSWORD: cmp-local-test
+      POSTGRES_URL: jdbc:postgresql://compreface-postgres-db:5432/frs
+      SPRING_PROFILES_ACTIVE: dev
+      API_JAVA_OPTS: -Xmx1g
+      SAVE_IMAGES_TO_DB: "false"
+      MAX_FILE_SIZE: 5MB
+      MAX_REQUEST_SIZE: 10MB
+
+  compreface-admin:
+    image: exadel/compreface-admin:1.2.0
+    depends_on: [compreface-postgres-db]
+    environment:
+      POSTGRES_USER: compreface
+      POSTGRES_PASSWORD: cmp-local-test
+      POSTGRES_URL: jdbc:postgresql://compreface-postgres-db:5432/frs
+      SPRING_PROFILES_ACTIVE: dev
+      ENABLE_EMAIL_SERVER: "false"
+      ADMIN_JAVA_OPTS: -Xmx512m
+      MAX_FILE_SIZE: 5MB
+      MAX_REQUEST_SIZE: 10MB
+
+  compreface-fe:
+    image: exadel/compreface-fe:1.2.0
+    depends_on: [compreface-api, compreface-admin]
+    ports: ["8000:80"]
+    environment:
+      CLIENT_MAX_BODY_SIZE: 10M
+      PROXY_READ_TIMEOUT: 60000ms
+      PROXY_CONNECT_TIMEOUT: 10000ms
+
+  lite:
+    image: compreface-lite:dev
+    ports: ["8080:8080"]
+    environment:
+      VERIFICATION_API_KEY: lite-verify-test-key
+      DETECTION_API_KEY: lite-detect-test-key
+      WORKERS: "2"
+    volumes: [litemodels:/models:ro]
+
+volumes:
+  pgdata:
+  litemodels:
+    external: true
+    name: litemodels

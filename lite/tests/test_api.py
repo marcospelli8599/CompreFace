@@ -113,7 +113,8 @@ def test_verify_rejects_garbage_image():
         headers={"x-api-key": VERIFY_KEY},
         files={"source_image": ("a.png", b"no soy una imagen", "image/png"), "target_image": ("b.png", png(), "image/png")},
     )
-    assert response.status_code == 400 and response.json()["code"] == 21
+    # Igual que CompreFace: una imagen ilegible se contesta como "no hay cara" (28).
+    assert response.status_code == 400 and response.json()["code"] == 28
 
 
 def test_verify_missing_part_is_400():

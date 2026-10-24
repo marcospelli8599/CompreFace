@@ -35,9 +35,11 @@ def _decode(upload: UploadFile, limit: int) -> np.ndarray:
     data = upload.file.read(limit + 1)
     if len(data) > limit:
         raise ApiError(400, CODE_BAD_IMAGE, "Image is too large")
-    image = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
+    # Sin girar por EXIF, como imageio.imread en CompreFace (Vero ya envía la foto girada y sin el metadato).
+    image = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
     if image is None:
-        raise ApiError(400, CODE_BAD_IMAGE, "Unsupported image")
+        # CompreFace responde 28 ("no hay cara") también cuando la imagen no se puede leer; Vero solo distingue ese código.
+        raise ApiError(400, CODE_NO_FACE, "No face is found in the given image")
     return image
 
 

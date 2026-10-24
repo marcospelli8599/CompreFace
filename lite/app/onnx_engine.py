@@ -14,10 +14,10 @@ from typing import Callable, Optional
 import cv2
 import numpy as np
 import onnxruntime as ort
-from skimage import transform
 
 from .engine import Face
 from .mtcnn_onnx import MTCNN
+from .resize import squish_img
 
 # Ajustes de CompreFace (facenet.FaceDetector) para esta compilación.
 IMAGE_SIZE = 160
@@ -110,7 +110,7 @@ class OnnxEngine:
 
     def _crop(self, rgb: np.ndarray, box: tuple[int, int, int, int]) -> np.ndarray:
         x_min, y_min, x_max, y_max = box
-        return transform.resize(rgb[y_min:y_max, x_min:x_max, :], (IMAGE_SIZE, IMAGE_SIZE))
+        return squish_img(np.ascontiguousarray(rgb[y_min:y_max, x_min:x_max, :]), IMAGE_SIZE)
 
     def _embedding(self, face_img: np.ndarray) -> np.ndarray:
         return self._facenet(prewhiten(face_img)[np.newaxis])[0][0]
