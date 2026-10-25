@@ -3,5 +3,9 @@ uvicorn==0.54.0
 python-multipart==0.0.32
 numpy==2.5.4
 opencv-python-headless==5.0.0.93
-onnxruntime==1.31.0
+# NO subir de 1.28.x sin repetir tools/egress_check.ps1: desde la 1.29.0 onnxruntime consulta mobile.events.data.microsoft.com
+# (telemetria) aunque se llame a disable_telemetry_events(). Un servicio que procesa caras no debe hablar con nadie fuera.
+onnxruntime==1.28.0
 scikit-image==0.26.0
+# app/resize.py usa scipy.ndimage directamente: version fijada (la que se probo contra el resize de CompreFace).
+scipy==1.18.1

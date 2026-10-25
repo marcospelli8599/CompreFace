@@ -19,6 +19,10 @@ from .engine import Face
 from .mtcnn_onnx import MTCNN
 from .resize import squish_img
 
+# ONNX Runtime trae telemetría (métricas de uso hacia Microsoft). No lleva imágenes, pero un servicio que procesa caras no debe
+# enviar nada fuera: se desactiva antes de crear ninguna sesión.
+ort.disable_telemetry_events()
+
 # Ajustes de CompreFace (facenet.FaceDetector) para esta compilación.
 IMAGE_SIZE = 160
 FACE_MIN_SIZE = 20

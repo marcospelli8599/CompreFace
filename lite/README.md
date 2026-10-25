@@ -70,6 +70,18 @@ Lo que explicó las diferencias que aparecieron al principio, y está corregido 
 - Imagen ilegible: se responde 28, como CompreFace. Sin rotar por EXIF, como `imageio`.
 - El modelo de edad convertido a ONNX coincide con el original: 445 caras, mismo tramo en todas (`tools/diag_ref.py`, `tools/diag_lite.py`).
 
+## Sin conexiones de salida
+
+Desde `onnxruntime` 1.29.0 el motor consulta `mobile.events.data.microsoft.com` (telemetría) aunque se llame a
+`disable_telemetry_events()`. Por eso `requirements.txt` fija **1.28.0**, y `tools/egress_check.ps1` comprueba que el servicio no
+intenta resolver ningún nombre (devuelve 0 consultas). Repetirlo antes de subir de versión cualquier dependencia del motor.
+
+## Imagen de producción
+
+`Dockerfile.models` añade los `.onnx` (no están en el repositorio) a la imagen: `docker build -f Dockerfile.models
+--build-context models=<carpeta> -t ghcr.io/<usuario>/compreface-lite:<version> .`. Pesa ~1,3 GB. Lleva pesos con licencia propia:
+solo como paquete **privado**. Se ejecuta con sistema de ficheros de solo lectura y sin capabilities (probado).
+
 ## Pruebas
 
     pip install -r requirements-dev.txt

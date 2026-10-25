@@ -1,0 +1,11 @@
+# Imagen de producción: compreface-lite con los modelos .onnx dentro (/models), para los nodos del Swarm, que no tienen dónde montarlos.
+# Los .onnx no están en el repositorio: salen de tools/convert_models.py. Se pasan como contexto con nombre:
+#   docker build -f Dockerfile.models --build-context models=<carpeta con los .onnx> -t ghcr.io/<usuario>/compreface-lite:<version> .
+# OJO: la imagen lleva pesos con licencia propia (ver README, "Licencias de los modelos"): publicarla solo como paquete PRIVADO.
+ARG BASE=compreface-lite:dev
+FROM ${BASE}
+USER root
+COPY --from=models / /models/
+# La carpeta y los modelos legibles por el usuario sin privilegios (10001) del servicio.
+RUN chmod -R a+rX /models
+USER 10001
